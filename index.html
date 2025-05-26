@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mobile Weather App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .weather-app {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border-radius: 30px;
+      padding: 28px 24px;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .search {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .search input {
+      flex: 1;
+      padding: 14px 18px;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      outline: none;
+      transition: 0.3s;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .search input::placeholder {
+      color: #ccc;
+    }
+
+    .search input:focus {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .weather {
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .weather h1 {
+      font-size: 48px;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+
+    .icon {
+      font-size: 60px;
+      margin: 15px 0;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
+    }
+
+    .weather h2 {
+      font-size: 22px;
+      font-weight: 400;
+      margin: 8px 0;
+    }
+
+    .info {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 25px;
+      font-size: 16px;
+    }
+
+    .info div {
+      text-align: center;
+    }
+
+    .label {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .error {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #ffbaba;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="weather-app">
+  <div class="search">
+    <input type="text" id="cityInput" placeholder="Search city..." />
+  </div>
+  <div class="weather">
+    <h1 id="temp">--°C</h1>
+    <div class="icon">☀️</div>
+    <h2 id="cityName">Loading...</h2>
+    <div class="info">
+      <div>
+        <div id="humidity">--%</div>
+        <div class="label">Humidity</div>
+      </div>
+      <div>
+        <div id="wind">-- km/h</div>
+        <div class="label">Wind</div>
+      </div>
+    </div>
+    <div id="error" class="error"></div>
+  </div>
+</div>
+
+<script>
+  const apiKey = '9346f74cf3f4f6f230adbfc6a1dbda89'; // Replace with your OpenWeatherMap API key
+  const cityInput = document.getElementById('cityInput');
+  const cityName = document.getElementById('cityName');
+  const temp = document.getElementById('temp');
+  const humidity = document.getElementById('humidity');
+  const wind = document.getElementById('wind');
+  const icon = document.querySelector('.icon');
+  const errorBox = document.getElementById('error');
+
+  cityInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      fetchWeather(cityInput.value.trim());
+    }
+  });
+
+  async function fetchWeather(city) {
+    if (!city) return;
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("City not found");
+
+      const data = await res.json();
+      updateUI(data);
+    } catch (err) {
+      errorBox.textContent = err.message;
+      temp.textContent = "--°C";
+      cityName.textContent = "Not Found";
+      humidity.textContent = "--%";
+      wind.textContent = "-- km/h";
+      icon.textContent = "❌";
+    }
+  }
+
+  function updateUI(data) {
+    const weather = data.weather[0].main;
+    const icons = {
+      Clear: '☀️',
+      Clouds: '☁️',
+      Rain: '🌧️',
+      Snow: '❄️',
+      Thunderstorm: '⚡',
+      Drizzle: '🌦️',
+      Mist: '🌫️'
+    };
+
+    cityName.textContent = data.name;
+    temp.textContent = `${Math.round(data.main.temp)}°C`;
+    humidity.textContent = `${data.main.humidity}%`;
+    wind.textContent = `${data.wind.speed} km/h`;
+    icon.textContent = icons[weather] || '🌡️';
+    errorBox.textContent = '';
+  }
+
+  // Default city
+  fetchWeather("New York");
+</script>
+
+</body>
+</html>
